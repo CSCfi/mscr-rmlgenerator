@@ -6,6 +6,7 @@
 
 ## Pseudocode
 
+```
 def getReferenceFormulationResource(sourceSchemaURI, inputGraph)
   sourceSchemaMetadataResource = inputGraph.getResource(sourceSchemaURI)
   format = sourceSchemeMetadataResource.getPropertyValue(:format)
@@ -64,4 +65,4 @@ def generateRMLFromMSCRGraph(inputGraph)
     outputGraph.add(rr:predicateObjectMap, new Resource(predicateObjectMapURI))
  
   return outputGraph
-    
+``` 
