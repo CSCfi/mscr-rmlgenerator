@@ -175,15 +175,14 @@ def addMappingFuncModel(mappingInfo, sourceFuncURI, m)
   m.addModel(createOuterFunctionModel(mappingFunctionResource, mappingFunctionURI, sourceFuncURI))
   return mappingFunctionResource
 
-def addTargetFuncModel(targetPropertyInfoList, mappingFuncURI, m)
+def addTargetFuncModel(uri, targetPropertyInfoList, mappingFuncURI, m)
   
   for(targetPropertyInfo in targetPropertyInfoList)
     functionURI = "mscr:func:passthrough"
     if(targetPropertyInfo.processing != null)
       functionURI = targetPropertyInfo.processing.functionURI
     params = targetPropertyInfo.processing.params
-    targetFunctionResource = generateFuncURI(targetPropertyInfo.id, false)
-    m.addModel(createOuterFunctionModel(targetFunctionResource, functionURI, mappingFuncURI}
+    m.addModel(createOuterFunctionModel(uri, functionURI, mappingFuncURI}
   
 
 def getProcessingModel(uri, inputGraph, mappingURI)
@@ -195,7 +194,7 @@ def getProcessingModel(uri, inputGraph, mappingURI)
 
    sourceFuncURI = addSourceFuncModel(mappingInfo.source, m)
    mappingFuncURI = addMappingFuncModel(mappingInfo, sourceFuncURI, m)
-   addTargetFuncModel(mappingInfo.target, mappingFuncURI, m)
+   addTargetFuncModel(uri, mappingInfo.target, mappingFuncURI, m)
    return m
 
 
