@@ -1,7 +1,7 @@
 # mscr-rmlgenerator
 
 ## Preconditions 
- 1. Iterator mappings must be one-to-one mappings i.e. only only one property is mapped for source and target. (Is this true?)
+ 1. Iterator mappings must be one-to-one mappings i.e. only only one property is mapped for source and target AND there can be only one iterator mapping per NodeShape. The reason fro this is that there is currently no way of grouping other mappings under specific iterator mapping. TODO: Add examples (screenshots from MSCR).
  2. Subject source mapping must have only one target property (i.e. the generated subject source property)
  3. There can only be one pair of iterator/subject source mappings per SHACL shape. How significant restriction is this?
  
