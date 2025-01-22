@@ -4,7 +4,49 @@
  1. Iterator mappings must be one-to-one mappings i.e. only only one property is mapped for source and target AND there can be only one iterator mapping per NodeShape. The reason fro this is that there is currently no way of grouping other mappings under specific iterator mapping. TODO: Add examples (screenshots from MSCR).
  2. Subject source mapping must have only one target property (i.e. the generated subject source property)
  3. There can only be one pair of iterator/subject source mappings per SHACL shape. How significant restriction is this?
- 
+
+## Function calls
+
+sourceFunc
+- default -> passThrough 
+- input: field to reference
+- output: array of values in the order of source properties
+
+mappingFunc
+- default -> passThrough 
+- input: array of values extracted from the source properties
+- output: array of values. Exact output depends on the function. 
+targetFunc
+- default -> passThrough  
+- input: array of values
+- output: ?
+
+createArray
+- create new array and add the value param
+- return array
+
+addToArray
+- add value param to the list provides through list param
+- return array
+
+Example with two source properties. 
+```
+targetFunc( 
+    mappingFunc(
+        addToArray(
+            value:
+                sourceFunc(valueParam: <raw value2)
+            list:
+                createArray(
+                    value: 
+                        sourceFunc(valueParam: <raw value1>)
+                )        
+        )
+    )
+)
+```
+
+
 ## Pseudocode
 
 ```
@@ -56,16 +98,105 @@ def getLogicalSourceModel(subjectURI, inputGraph, sourceSchemaURI, sourcePropert
   logicalSource.add(rml:source, ?????)
   return logicalSource
 
-def createFunctionCallModel()
+
+def createFunctionModel(functionValueTargetURI, functionToCallURI, paramDataList)
+  m = new Graph()
+  m.addRDF(
+    functionValueTargetURI,
+    fnml:functionValue,
+    [
+      rr:predicateObjectMap [
+                            rr:predicate fno:executes;
+                            rr:objectMap [
+                                             rr:constant {functionToCallURI}
+                                         ];
+                        ];
+      {for each paramData in paramDataList
+      rr:predicateObjectMap [
+                            rr:predicate {paramData.paramName};
+                            rr:objectMap {paramData.paramValueModel}
+
+                        ];
+      }
+    ]
+  )
+ return m
+def createOuterFunctionModel(functionValueTargetURI, functionToCallURI, valueURI)
+  m = new Graph()
+  m.addRDF(
+    functionValueTargetURI,
+    fnml:functionValue,
+    [
+      rr:predicateObjectMap [
+                            rr:predicate fno:executes;
+                            rr:objectMap [
+                                             rr:constant {functionToCallURI}
+                                         ];
+                        ];
+      {for each paramData in paramDataList
+      rr:predicateObjectMap [
+                            rr:predicate :valueParameter
+                            rr:objectMap {valueURI}
+
+                        ];
+      }
+    ]
+  )
+ return m
+
+def addSourceFuncModel(sourcePropertyInfoList, m)
+  latestFunctionURI = null
+  for(sourcePropertyInfo in sourcePropertyInfoList)
+    # create function call pair: source function + outer function
+    sourceFunctionURI = "mscr:func:passthrough"
+    if(sourcePropertyInfo.processing != null)
+      sourceFunctionURI = sourcePropertyInfo.processing.functionURI
+    params = sourcePropertyInfo.processing.params
+    
+    if(is first element in the sourcePropertyInfoList) {
+      outerFunctionURI = "mcsr:createArray"
+    }
+    else {
+      outerFunctionURI = "mcsr:addToArray"      
+    }
+    sourceFunctionResource = generateFuncURI(sourcePropertyInfo.id, false)
+    outerFunctionResource = generateFuncURI(sourcePropertyInfo.id, true)    
+    m.addModel(createFunctionModel(sourceFunctionResource, sourceFunctionURI, params))    
+    m.addModel(createOuterFunctionModel(outerFunctionResource, outerFunctionURI, sourceFunctionResource}
+     
+    latestFunctionURI = outerFunctionResource
+  return latestFunctionURI
+
+def addMappingFuncModel(mappingInfo, sourceFuncURI, m)
+  mappingFunctionURI = "mscr:func:passthrough"
+  if(mappingInfo.processing != null)
+    mappingFunctionURI = mappingInfo.processing.functionURI
+  mappingFunctionResource = generateFuncURI(mappingInfo.id)
+  m.addModel(createOuterFunctionModel(mappingFunctionResource, mappingFunctionURI, sourceFuncURI))
+  return mappingFunctionResource
+
+def addTargetFuncModel(targetPropertyInfoList, mappingFuncURI, m)
+  
+  for(targetPropertyInfo in targetPropertyInfoList)
+    functionURI = "mscr:func:passthrough"
+    if(targetPropertyInfo.processing != null)
+      functionURI = targetPropertyInfo.processing.functionURI
+    params = targetPropertyInfo.processing.params
+    targetFunctionResource = generateFuncURI(targetPropertyInfo.id, false)
+    m.addModel(createOuterFunctionModel(targetFunctionResource, functionURI, mappingFuncURI}
+  
 
 def getProcessingModel(uri, inputGraph, mappingURI)
   mappingInfo = getMappingInfo(mappingURI)
   m = new Graph()
+  if(mappingInfo.processing == null && mappingInfo.source.filter(x: x.processing != null).isEmpty && mappingInfo.target.filter(x: x.processing != null).isEmpty)
+    # mapping does not include any kind of processing configuration
+    return null
 
-  function = m.createResource()
-  functionValue = m.createResource()
-  m.addTriple(function, fnml:functionValue, functionValue)
-  
+   sourceFuncURI = addSourceFuncModel(mappingInfo.source, m)
+   mappingFuncURI = addMappingFuncModel(mappingInfo, sourceFuncURI, m)
+   addTargetFuncModel(mappingInfo.target, mappingFuncURI, m)
+   return m
 
 
 def getSourcePropertyURIs(mappingURI, inputGraph)
@@ -78,6 +209,7 @@ def getSourcePropertyURIs(mappingURI, inputGraph)
     order by ASC(?index)
    )
 
+# Return a graph that contains all information related to single subjectMap
 def getSubjectMapModel(uri, targetShapeURI, inputGraph):
   mappingURI = getSubjectSourceMapping(targetShapeURI, inputGraph)
   subjectMap = new Graph()
@@ -89,7 +221,7 @@ def getSubjectMapModel(uri, targetShapeURI, inputGraph):
     subjectMap.addTriple(uri, rdf.type, rr:SubjectMap)
     processingURI = getProcessingURI(...)
   
-    processingModel = getProsessingModel(processingURI, inputGraph, mappingURI)
+    processingModel = getProcessingModel(processingURI, inputGraph, mappingURI)
     if(processingModel != null)
       subjectMap.addModel(processingModel)
       subjectMap.addTriple(uri, fnml:functionValue, processingURI)
