@@ -1,9 +1,10 @@
 # mscr-rmlgenerator
 
-## Preconditions 
+## Preconditions / limitations
  1. Iterator mappings must be one-to-one mappings i.e. only only one property is mapped for source and target AND there can be only one iterator mapping per NodeShape. The reason fro this is that there is currently no way of grouping other mappings under specific iterator mapping. TODO: Add examples (screenshots from MSCR).
  2. Subject source mapping must have only one target property (i.e. the generated subject source property)
  3. There can only be one pair of iterator/subject source mappings per SHACL shape. How significant restriction is this?
+ 4. 
 
 ## Function calls
 
@@ -192,10 +193,10 @@ def getProcessingModel(uri, inputGraph, mappingURI)
     # mapping does not include any kind of processing configuration
     return null
 
-   sourceFuncURI = addSourceFuncModel(mappingInfo.source, m)
-   mappingFuncURI = addMappingFuncModel(mappingInfo, sourceFuncURI, m)
-   addTargetFuncModel(uri, mappingInfo.target, mappingFuncURI, m)
-   return m
+  sourceFuncURI = addSourceFuncModel(mappingInfo.source, m)
+  mappingFuncURI = addMappingFuncModel(mappingInfo, sourceFuncURI, m)
+  addTargetFuncModel(uri, mappingInfo.target, mappingFuncURI, m)
+  return m
 
 
 def getSourcePropertyURIs(mappingURI, inputGraph)
