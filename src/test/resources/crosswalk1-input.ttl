@@ -360,7 +360,7 @@
                                     ] ;
                             <http://www.w3.org/1999/02/22-rdf-syntax-ns#_2>
                                     [ <http://uri.suomi.fi/datamodel/ns/mscr#key>
-                                              "http://users.ugent.be/~bjdmeest/function/grel.ttl#delimiter" ;
+                                              "http://users.ugent.be/~bjdmeest/function/grel.ttl#delimiterParameter" ;
                                       <http://uri.suomi.fi/datamodel/ns/mscr#value>
                                               "_"
                                     ]
