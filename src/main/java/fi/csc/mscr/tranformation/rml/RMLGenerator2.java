@@ -15,6 +15,7 @@ import org.apache.jena.rdf.model.Model;
 import org.apache.jena.rdf.model.ModelFactory;
 import org.apache.jena.rdf.model.Resource;
 import org.apache.jena.vocabulary.RDF;
+import org.topbraid.shacl.vocabulary.SH;
 
 import fi.vm.yti.datamodel.api.v2.dto.MSCR;
 import fi.vm.yti.datamodel.api.v2.dto.MappingInfoDTO;
@@ -63,6 +64,33 @@ public class RMLGenerator2 {
 		return m;
 	}
 
+	record DatatypeInfo(Resource nodeKind, Resource datatype) {}
+	private DatatypeInfo getDataTypeInfo(Model inputModel, String targetShapeURI) {
+		Resource targetShape = inputModel.getResource(targetShapeURI);
+		Resource datatype = null;
+		if(targetShape.hasProperty(SH.datatype)) {
+			datatype = targetShape.getProperty(SH.datatype).getResource();
+		}
+		Resource nodeKind = null;
+		if(targetShape.hasProperty(SH.nodeKind)) {
+			nodeKind = targetShape.getProperty(SH.nodeKind).getResource();
+		}
+		return new DatatypeInfo(nodeKind, datatype);
+	}
+	
+	private void addDatatype(Model outputModel, Resource targetResource, Resource datatype, Resource nodeKind) {
+		if(datatype != null) {
+			targetResource.addProperty(outputModel.createProperty(nsRR+"datatype") , datatype);
+			targetResource.addProperty(outputModel.createProperty(nsRR+"termType") , outputModel.createProperty(nsRR+"Literal"));
+		}
+		else if(nodeKind != null) {
+			if(nodeKind.getURI().equals(SH.IRI.getURI())) {
+				targetResource.addProperty(outputModel.createProperty(nsRR+"termType") , outputModel.createProperty(nsRR+"IRI"));
+			}
+		}
+		
+		
+	}
 	private void addPredicateObjectMapModel(Resource triplesMap, Model inputModel, Model outputModel, String targetShapeURI) {
 		MappingMapper mapper = new MappingMapper();
 		List<Resource> mappings = getPredicateObjectMappings(inputModel, targetShapeURI);
@@ -79,8 +107,11 @@ public class RMLGenerator2 {
 					pomObjectMap.addProperty(outputModel.createProperty(nsRML+"reference"), outputModel.createLiteral(sourcePath.getString()));
 					pom.addProperty(outputModel.createProperty(nsRR+"objectMap"), pomObjectMap);
 					
-					Resource predicate = inputModel.getResource(targetNode.getId());
+					Resource predicate = inputModel.getResource(targetNode.getId()).getPropertyResourceValue(SH.path);
 					pom.addProperty(outputModel.createProperty(nsRR+"predicate"), predicate);
+					
+					DatatypeInfo dti = getDataTypeInfo(inputModel, targetNode.getId());
+					addDatatype(outputModel, pomObjectMap, dti.datatype, dti.nodeKind);
 					
 					triplesMap.addProperty(outputModel.createProperty(nsRR + "predicateObjectMap"), pom);					
 				}								
@@ -96,8 +127,13 @@ public class RMLGenerator2 {
 					Resource pom = outputModel.createResource();
 					pom.addProperty(outputModel.createProperty(nsRR+"objectMap"), targetFunc);
 					
-					Resource predicate = inputModel.getResource(targetNode.getId());
+					Resource predicate = inputModel.getResource(targetNode.getId()).getPropertyResourceValue(SH.path);
 					pom.addProperty(outputModel.createProperty(nsRR+"predicate"), predicate);
+					
+					
+					DatatypeInfo dti = getDataTypeInfo(inputModel, targetNode.getId());
+					addDatatype(outputModel, targetFunc, dti.datatype, dti.nodeKind);
+
 					
 					triplesMap.addProperty(outputModel.createProperty(nsRR + "predicateObjectMap"), pom);					
 					
