@@ -1,0 +1,107 @@
+[
+    {
+        "type": "mscr:dataMapping",
+        "source": [
+            {
+                "id": "mscr:schema:5a14637d-f262-4b2b-b015-a832a4b4b58c#root-Root-root",
+                "processing": null,
+                "mscrType": "default"
+            }
+        ],
+        "predicate": null,
+        "target": [
+            {
+                "id": "http://uri.suomi.fi/datamodel/ns/mscr#Person1Shape",
+                "processing": null,
+                "mscrType": "iterator"                
+            }
+        ],
+        "processing": null,
+        "notes": "",
+        "isPartOf": "mscr:crosswalk:52d28f85-14d2-4127-8931-e9cb07074ba8",
+        "id": "mscr:crosswalk:52d28f85-14d2-4127-8931-e9cb07074ba8@mapping=bcf3e7a2-756f-4112-a896-177214766e57"
+    },
+    {
+        "type": "mscr:dataMapping",
+        "source": [
+            {
+                "id": "mscr:schema:5a14637d-f262-4b2b-b015-a832a4b4b58c#root-Root-root-Root-firstName",
+                "processing": {
+                    "id": "addPrefix",
+                    "params": {
+                        "prefix": "http://ex.com/"
+                    }
+                },
+                "mscrType": "default",
+                "index": 0
+            },
+            {
+                "id": "mscr:schema:5a14637d-f262-4b2b-b015-a832a4b4b58c#root-Root-root-Root-lastName",
+                "processing": null,
+                "mscrType": "default",
+                "index": 1
+            }            
+        ],
+        "predicate": null,
+        "target": [
+            {
+                "id": "http://uri.suomi.fi/datamodel/ns/mscr#Person1Shape",
+                "processing": null,
+                "mscrType": "subject"                
+            }
+        ],
+        "processing": {
+            "id": "concat",
+            "params": {
+                "separator": "/"
+            }
+        },
+        "notes": "",
+        "isPartOf": "mscr:crosswalk:52d28f85-14d2-4127-8931-e9cb07074ba8",
+        "id": "mscr:crosswalk:52d28f85-14d2-4127-8931-e9cb07074ba8@mapping=bcf3e7a2-756f-4112-a896-177214766e57"
+    },    
+    {
+        "type": "mscr:dataMapping",
+        "source": [
+            {
+                "id": "mscr:schema:5a14637d-f262-4b2b-b015-a832a4b4b58c#root-Root-root-Root-firstName",
+                "processing": null,
+                "mscrType": "default"
+            }
+        ],
+        "predicate": null,
+        "target": [
+            {
+                "id": "mscr:schema:3a9d1aef-52ab-425c-90ec-2e15f9703ec9#28ad84b8471c0abdc37727a07b54a15c",
+                "processing": null,
+                "mscrType": "default"
+            }
+        ],
+        "processing": null,
+        "notes": "",
+        "isPartOf": "mscr:crosswalk:52d28f85-14d2-4127-8931-e9cb07074ba8",
+        "id": "mscr:crosswalk:52d28f85-14d2-4127-8931-e9cb07074ba8@mapping=107154e5-d282-47e9-86fc-eba6f97d3a12"
+    },
+    {
+        "type": "mscr:dataMapping",
+        "source": [
+            {
+                "id": "mscr:schema:5a14637d-f262-4b2b-b015-a832a4b4b58c#root-Root-root-Root-lastName",
+                "processing": null,
+                "mscrType": "default"
+            }
+        ],
+        "predicate": null,
+        "target": [
+            {
+                "id": "mscr:schema:3a9d1aef-52ab-425c-90ec-2e15f9703ec9#88dc60d6f9d68169b18a30c9f52f5379",
+                "processing": null,
+                "mscrType": "default"
+            }
+        ],
+        "processing": null,
+        "notes": "",
+        "isPartOf": "mscr:crosswalk:52d28f85-14d2-4127-8931-e9cb07074ba8",
+        "id": "mscr:crosswalk:52d28f85-14d2-4127-8931-e9cb07074ba8@mapping=918d7337-9916-4c44-a2fa-61408f18fb7e"
+    }
+]
