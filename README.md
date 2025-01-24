@@ -233,9 +233,19 @@ def getSubjectMapModel(uri, targetShapeURI, inputGraph):
     # add also rr:class ?
     subjectMap.addTriple(uri, rr:tempType, rr:IRI)
   return subjectMap
- 
-def getPredicateObjectMapModel(subjectURI):
 
+# return mappingURIs for that have targets in target shape (excluding mappings to iterator and subject source)
+def getPredicateObjectMapppings(targetShapeURI)
+
+def getPredicateObjectMapModel(subjectURI, targetShapeURI, inputGraph):
+  MappingMapper mapper = new MappingMapper();
+  g = new Graph()
+  foreach(mappingURI in getPredicateObjectMapppings(targetShapeURI, inputGraph))    
+    mappingInfo = mapper.mapToMappingDTO(mappingURI, inputModel);
+    # do processing until mappingFunc
+    # foreach target doTargetProcessing(mappingFunc, targetIndex)
+    
+		
 def generateRMLFromMSCRGraph(inputGraph)
   validate(inputGraph) # check if the preconditions hold
   sourceSchemaURI = getSourceSchemaURI(inputGraph)
