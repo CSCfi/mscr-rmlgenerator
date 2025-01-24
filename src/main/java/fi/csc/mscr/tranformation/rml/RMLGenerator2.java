@@ -183,127 +183,111 @@ where {
 	}
 
 	private Resource addTargetFuncModel(Model outputModel, NodeInfo targetPropertyInfo, int targetIndex, Resource mappingFunc) {
-		String targetFunctionURI = "http://users.ugent.be/~bjdmeest/function/grel.ttl#passthrough";
+		String targetFunctionURI = null;
 		Map<String, Object> params = null;
 		if(targetPropertyInfo.getProcessing() != null) {
 			targetFunctionURI = targetPropertyInfo.getProcessing().getId();
 			params = targetPropertyInfo.getProcessing().getParams();
-		}
-		 
-		String innerFunctionURI = "http://users.ugent.be/~bjdmeest/function/grel.ttl#arrayGet";
-		Resource innerFunctionResource = outputModel.createResource(generateRandomURI(targetPropertyInfo.getId(), ":getValue"));
-		
-		Resource function1Value = outputModel.createResource();
-		innerFunctionResource.addProperty(outputModel.createProperty(nsFNML + "functionValue"), function1Value);
-		
-		
-		Resource funcPom1 = outputModel.createResource();
-		function1Value.addProperty(outputModel.createProperty(nsRR+"predicateObjectMap"), funcPom1);							
-		funcPom1.addProperty(outputModel.createProperty(nsRR+"predicate"), outputModel.createResource(nsFNO+"executes"));
-		Resource funcPom1ObjectMap = outputModel.createResource();
-		funcPom1ObjectMap.addProperty(outputModel.createProperty(nsRR+"constant"), outputModel.createResource(innerFunctionURI));
-		funcPom1.addProperty(outputModel.createProperty(nsRR+"objectMap"), funcPom1ObjectMap);
+			Resource outerFunctionResource = outputModel.createResource(generateRandomURI(targetPropertyInfo.getId(), ":outerfunc"));
 
-		Resource funcPom2 = outputModel.createResource();
-		function1Value.addProperty(outputModel.createProperty(nsRR+"predicateObjectMap"), funcPom2);							
-		funcPom2.addProperty(outputModel.createProperty(nsRR+"predicate"), outputModel.createResource(nsGREL+"p_param_a2"));
-		funcPom2.addProperty(outputModel.createProperty(nsRR+"objectMap"), mappingFunc);		
-				
-		Resource funcPom3 = outputModel.createResource();
-		function1Value.addProperty(outputModel.createProperty(nsRR+"predicateObjectMap"), funcPom3);							
-		funcPom3.addProperty(outputModel.createProperty(nsRR+"predicate"), outputModel.createResource(nsGREL+"indexParameter"));
-		Resource funcPom3ObjectMap = outputModel.createResource();
-		funcPom3ObjectMap.addProperty(outputModel.createProperty(nsRR+"constant"), outputModel.createTypedLiteral(targetIndex));
-		funcPom3.addProperty(outputModel.createProperty(nsRR+"objectMap"), funcPom3ObjectMap);
+			Resource function2Value = outputModel.createResource();
+			outerFunctionResource.addProperty(outputModel.createProperty(nsFNML + "functionValue"), function2Value);
 			
-		
-		
-		Resource outerFunctionResource = outputModel.createResource(generateRandomURI(targetPropertyInfo.getId(), ":outerfunc"));
+			Resource funcPom1_2 = outputModel.createResource();
+			function2Value.addProperty(outputModel.createProperty(nsRR+"predicateObjectMap"), funcPom1_2);							
+			funcPom1_2.addProperty(outputModel.createProperty(nsRR+"predicate"), outputModel.createResource(nsFNO+"executes"));
+			Resource funcPom1ObjectMap2 = outputModel.createResource();
+			funcPom1ObjectMap2.addProperty(outputModel.createProperty(nsRR+"constant"), outputModel.createResource(targetFunctionURI));
+			funcPom1_2.addProperty(outputModel.createProperty(nsRR+"objectMap"), funcPom1ObjectMap2);
+			
+							
+			Resource funcPom2_2 = outputModel.createResource();
+			function2Value.addProperty(outputModel.createProperty(nsRR+"predicateObjectMap"), funcPom2_2);							
+			funcPom2_2.addProperty(outputModel.createProperty(nsRR+"predicate"), outputModel.createResource(nsGREL+"anyObjectParam"));
+			funcPom2_2.addProperty(outputModel.createProperty(nsRR+"objectMap"), mappingFunc);
+			
+			if(params != null) {
+				for (String key : params.keySet()) {
+					if(key.equals("input")) {
+						continue;
+					}
+					Object value = params.get(key);
+					Resource funcPom = outputModel.createResource();
+					function2Value.addProperty(outputModel.createProperty(nsRR+"predicateObjectMap"), funcPom);							
+					funcPom.addProperty(outputModel.createProperty(nsRR+"predicate"), outputModel.createResource(key));
+					Resource funcPomObjectMap = outputModel.createResource();
+					funcPomObjectMap.addProperty(outputModel.createProperty(nsRR+"constant"), outputModel.createLiteral(value.toString()));
+					funcPom.addProperty(outputModel.createProperty(nsRR+"objectMap"), funcPomObjectMap);
 
-		Resource function2Value = outputModel.createResource();
-		outerFunctionResource.addProperty(outputModel.createProperty(nsFNML + "functionValue"), function2Value);
-		
-		Resource funcPom1_2 = outputModel.createResource();
-		function2Value.addProperty(outputModel.createProperty(nsRR+"predicateObjectMap"), funcPom1_2);							
-		funcPom1_2.addProperty(outputModel.createProperty(nsRR+"predicate"), outputModel.createResource(nsFNO+"executes"));
-		Resource funcPom1ObjectMap2 = outputModel.createResource();
-		funcPom1ObjectMap2.addProperty(outputModel.createProperty(nsRR+"constant"), outputModel.createResource(targetFunctionURI));
-		funcPom1_2.addProperty(outputModel.createProperty(nsRR+"objectMap"), funcPom1ObjectMap2);
-		
-						
-		Resource funcPom2_2 = outputModel.createResource();
-		function2Value.addProperty(outputModel.createProperty(nsRR+"predicateObjectMap"), funcPom2_2);							
-		funcPom2_2.addProperty(outputModel.createProperty(nsRR+"predicate"), outputModel.createResource(nsGREL+"valueParameter"));
-		funcPom2_2.addProperty(outputModel.createProperty(nsRR+"objectMap"), innerFunctionResource);
-		
-		if(params != null) {
-			for (String key : params.keySet()) {
-				if(key.equals("input")) {
-					continue;
 				}
-				Object value = params.get(key);
-				Resource funcPom = outputModel.createResource();
-				function2Value.addProperty(outputModel.createProperty(nsRR+"predicateObjectMap"), funcPom);							
-				funcPom.addProperty(outputModel.createProperty(nsRR+"predicate"), outputModel.createResource(key));
-				Resource funcPomObjectMap = outputModel.createResource();
-				funcPomObjectMap.addProperty(outputModel.createProperty(nsRR+"constant"), outputModel.createLiteral(value.toString()));
-				funcPom.addProperty(outputModel.createProperty(nsRR+"objectMap"), funcPomObjectMap);
+				
+			}		
+			return outerFunctionResource;
+		}
+		else {
+			return mappingFunc;
+		}
 
-			}
-			
-		}		
 		
-		return outerFunctionResource;
+		
+		
+		
 
 	}
 	private Resource addMappingFuncModel(Model outputModel, MappingInfoDTO mappingInfo, Resource sourceFunctionResource) {
-		String mappingFunctionURI = "http://users.ugent.be/~bjdmeest/function/grel.ttl#passthrough";
+		String mappingFunctionURI = null;
 		Map<String, Object> params = null;
 		if(mappingInfo.getProcessing() != null) {
 			mappingFunctionURI = mappingInfo.getProcessing().getId();
 			params = mappingInfo.getProcessing().getParams();
-		}	
-		
-		Resource mappingFunctionResource = outputModel.createResource(mappingInfo.getPID() +  ":func");
-		//addOuterFunctionModel(outputModel, mappingFunctionResource, mappingFunctionURI, sourceFunctionResource, null);
-		Resource functionValue = outputModel.createResource();
-		mappingFunctionResource.addProperty(outputModel.createProperty(nsFNML + "functionValue"), functionValue);
-		
-		Resource funcPom1 = outputModel.createResource();
-		functionValue.addProperty(outputModel.createProperty(nsRR+"predicateObjectMap"), funcPom1);							
-		funcPom1.addProperty(outputModel.createProperty(nsRR+"predicate"), outputModel.createResource(nsFNO+"executes"));
-		Resource funcPom1ObjectMap = outputModel.createResource();
-		funcPom1ObjectMap.addProperty(outputModel.createProperty(nsRR+"constant"), outputModel.createResource(mappingFunctionURI));
-		funcPom1.addProperty(outputModel.createProperty(nsRR+"objectMap"), funcPom1ObjectMap);
-
-		Resource funcPom3 = outputModel.createResource();
-		functionValue.addProperty(outputModel.createProperty(nsRR+"predicateObjectMap"), funcPom3);							
-		funcPom3.addProperty(outputModel.createProperty(nsRR+"predicate"), outputModel.createResource(nsGREL+"p_param_a2"));
-		funcPom3.addProperty(outputModel.createProperty(nsRR+"objectMap"), sourceFunctionResource);		
-
-		if(params != null) {
-			for (String key : params.keySet()) {
-				if(key.equals("input")) {
-					continue;
-				}
-				Object value = params.get(key);
-				Resource funcPom = outputModel.createResource();
-				functionValue.addProperty(outputModel.createProperty(nsRR+"predicateObjectMap"), funcPom);							
-				funcPom.addProperty(outputModel.createProperty(nsRR+"predicate"), outputModel.createResource(key));
-				Resource funcPomObjectMap = outputModel.createResource();
-				funcPomObjectMap.addProperty(outputModel.createProperty(nsRR+"constant"), outputModel.createLiteral(value.toString()));
-				funcPom.addProperty(outputModel.createProperty(nsRR+"objectMap"), funcPomObjectMap);
-
-			}
 			
-		}		
-		return mappingFunctionResource;
+			Resource mappingFunctionResource = outputModel.createResource(mappingInfo.getPID() +  ":func");
+			//addOuterFunctionModel(outputModel, mappingFunctionResource, mappingFunctionURI, sourceFunctionResource, null);
+			Resource functionValue = outputModel.createResource();
+			mappingFunctionResource.addProperty(outputModel.createProperty(nsFNML + "functionValue"), functionValue);
+			
+			Resource funcPom1 = outputModel.createResource();
+			functionValue.addProperty(outputModel.createProperty(nsRR+"predicateObjectMap"), funcPom1);							
+			funcPom1.addProperty(outputModel.createProperty(nsRR+"predicate"), outputModel.createResource(nsFNO+"executes"));
+			Resource funcPom1ObjectMap = outputModel.createResource();
+			funcPom1ObjectMap.addProperty(outputModel.createProperty(nsRR+"constant"), outputModel.createResource(mappingFunctionURI));
+			funcPom1.addProperty(outputModel.createProperty(nsRR+"objectMap"), funcPom1ObjectMap);
+
+			Resource funcPom3 = outputModel.createResource();
+			functionValue.addProperty(outputModel.createProperty(nsRR+"predicateObjectMap"), funcPom3);							
+			funcPom3.addProperty(outputModel.createProperty(nsRR+"predicate"), outputModel.createResource(nsGREL+"p_param_a2"));
+			funcPom3.addProperty(outputModel.createProperty(nsRR+"objectMap"), sourceFunctionResource);		
+
+			if(params != null) {
+				for (String key : params.keySet()) {
+					if(key.equals("input")) {
+						continue;
+					}
+					Object value = params.get(key);
+					Resource funcPom = outputModel.createResource();
+					functionValue.addProperty(outputModel.createProperty(nsRR+"predicateObjectMap"), funcPom);							
+					funcPom.addProperty(outputModel.createProperty(nsRR+"predicate"), outputModel.createResource(key));
+					Resource funcPomObjectMap = outputModel.createResource();
+					funcPomObjectMap.addProperty(outputModel.createProperty(nsRR+"constant"), outputModel.createLiteral(value.toString()));
+					funcPom.addProperty(outputModel.createProperty(nsRR+"objectMap"), funcPomObjectMap);
+
+				}
+				
+			}
+			return mappingFunctionResource;
+		}	
+		else {
+			return sourceFunctionResource;
+		}
+		
+		
+		
 	}
 	private Resource addSourceFuncModel(Model outputModel, List<NodeInfo> source) {
 		Resource latestFunction = null;
 		for(int i = 0; i < source.size(); i++) {
 			NodeInfo sourcePropertyInfo = source.get(i);
-			String sourceFunctionURI = "http://users.ugent.be/~bjdmeest/function/grel.ttl#passthrough";
+			String sourceFunctionURI = null;
 			Map<String, Object> params = null;
 			if(sourcePropertyInfo.getProcessing() != null) {
 				sourceFunctionURI = sourcePropertyInfo.getProcessing().getId();
@@ -314,9 +298,18 @@ where {
 			if(i > 0) {
 				outerFunctionURI = "http://users.ugent.be/~bjdmeest/function/grel.ttl#addToArray";
 			}
-			Resource sourceFunctionResource = outputModel.createResource(sourcePropertyInfo.getId() + ":" + source.hashCode() + ":func");
+			Resource sourceFunctionResource = null;
 			Resource outerFunctionResource = outputModel.createResource(sourcePropertyInfo.getId() + ":" + source.hashCode() + ":outerfunc");
-			addFunctionModel(outputModel, sourceFunctionResource, sourceFunctionURI, sourcePropertyInfo.getInstancePath(), params);
+			if(sourceFunctionURI != null) {
+				sourceFunctionResource = outputModel.createResource(sourcePropertyInfo.getId() + ":" + source.hashCode() + ":func");				
+				addFunctionModel(outputModel, sourceFunctionResource, sourceFunctionURI, sourcePropertyInfo.getInstancePath(), params);
+				
+			}
+			else {
+				sourceFunctionResource = outputModel.createResource();
+				sourceFunctionResource.addProperty(outputModel.createProperty(nsRML+"reference"), outputModel.createLiteral(sourcePropertyInfo.getInstancePath()));
+				
+			}
 			addOuterFunctionModel(outputModel, outerFunctionResource, outerFunctionURI, sourceFunctionResource, latestFunction);
 			
 			latestFunction = outerFunctionResource;
@@ -336,7 +329,7 @@ where {
 		
 		Resource funcPom2 = m.createResource();
 		functionValue.addProperty(m.createProperty(nsRR+"predicateObjectMap"), funcPom2);							
-		funcPom2.addProperty(m.createProperty(nsRR+"predicate"), m.createResource(nsGREL+"valueParameter"));
+		funcPom2.addProperty(m.createProperty(nsRR+"predicate"), m.createResource(nsGREL+"anyObjectParam"));
 		funcPom2.addProperty(m.createProperty(nsRR+"objectMap"), sourceFunctionResource);
 	
 		if(prev != null) {
@@ -353,6 +346,7 @@ where {
 
 	private void addFunctionModel(Model m, Resource sourceFunctionResource, String sourceFunctionURI,
 			String instancePath, Map<String, Object> params) {
+	
 		Resource functionValue = m.createResource();
 		sourceFunctionResource.addProperty(m.createProperty(nsFNML + "functionValue"), functionValue);
 		
@@ -366,7 +360,7 @@ where {
 						
 		Resource funcPom2 = m.createResource();
 		functionValue.addProperty(m.createProperty(nsRR+"predicateObjectMap"), funcPom2);							
-		funcPom2.addProperty(m.createProperty(nsRR+"predicate"), m.createResource(nsGREL+"valueParameter"));
+		funcPom2.addProperty(m.createProperty(nsRR+"predicate"), m.createResource(nsGREL+"anyObjectParam"));
 		Resource funcPom2ObjectMap = m.createResource();
 		funcPom2ObjectMap.addProperty(m.createProperty(nsRML+"reference"), m.createLiteral(instancePath));
 		funcPom2.addProperty(m.createProperty(nsRR+"objectMap"), funcPom2ObjectMap);
@@ -386,7 +380,8 @@ where {
 
 			}
 			
-		}
+		}			
+
 		//sourceFunctionResource.addProperty(m.createProperty(nsRR + "termType"), m.createResource(nsRR + "IRI"));		
 		
 	}

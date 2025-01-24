@@ -5,11 +5,8 @@ import java.util.Arrays;
 import java.util.List;
 
 public class CustomFunctions {
-	public static Object passthrough(Object obj) {
-		return obj;
-	}
 
-	public static String addSuffix(String value, String suffix) {
+	public static String addSuffix(Object value, String suffix) {
 		return value + suffix;
 	}
 
@@ -22,24 +19,19 @@ public class CustomFunctions {
 		return List.of(result);
 	}
 
-	public static List<String> split(String value, String delimiter) {
-		return Arrays.asList(value.split(delimiter));
-	}
-
-	public static Object arrayGet(List<String> values, int index) {
-		String result = values.get(index);
+	public static List<String> split(List<String> values, String delimiter) {
+		List<String> result = Arrays.asList(values.get(0).toString().split(delimiter));
 		return result;
 	}
 
-	public static List<String> createArray(String s) {
-		List<String> a = new ArrayList<String>();
+	public static List<Object> createArray(Object s) {
+		List<Object> a = new ArrayList<Object>();
 		a.add(s);
 		return a;
 	}
 
-	public static List<String> addToArray(List<String> a, String s) {
-		a.add(s);
+	public static List<String> addToArray(List<String> a, Object s) {
+		a.add(s.toString());
 		return a;
-
 	}
 }
