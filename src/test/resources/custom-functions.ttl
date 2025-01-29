@@ -1,0 +1,250 @@
+@prefix dcterms: <http://purl.org/dc/terms/> .
+@prefix doap:    <http://usefulinc.com/ns/doap#> .
+@prefix fno:     <https://w3id.org/function/ontology#> .
+@prefix fnoi:    <https://w3id.org/function/vocabulary/implementation#> .
+@prefix fnom:    <https://w3id.org/function/vocabulary/mapping#> .
+@prefix grel:    <http://users.ugent.be/~bjdmeest/function/grel.ttl#> .
+@prefix grelm:   <http://fno.io/grel/rmlmapping#> .
+@prefix rdfs:    <http://www.w3.org/2000/01/rdf-schema#> .
+@prefix rdf:     <http://www.w3.org/1999/02/22-rdf-syntax-ns#> .
+@prefix xsd:     <http://www.w3.org/2001/XMLSchema#> .
+
+grel:passthrough a fno:Function ;
+  fno:name "passthrough" ;
+  rdfs:label "passthrough" ;
+  dcterms:description "passthrough" ;
+  fno:expects ( grel:anyObject ) ;
+  fno:returns ( grel:objectOutput ) .
+
+grel:arrayGet a fno:Function ;
+  fno:name "arrayGet" ;
+  rdfs:label "arrayGet" ;
+  dcterms:description "arrayGet" ;
+  fno:expects ( grel:param_a2 grel:index ) ;
+  fno:returns ( grel:objectOutput ) .
+
+grel:addPrefix a fno:Function ;
+  fno:name "addPrefix" ;
+  rdfs:label "addPrefix" ;
+  dcterms:description "addPrefix" ;
+  fno:expects ( grel:anyObject grel:prefix) ;
+  fno:returns ( grel:stringOutput ) .
+
+grel:addSuffix a fno:Function ;
+  fno:name "addSuffix" ;
+  rdfs:label "addSuffix" ;
+  dcterms:description "addSuffix" ;
+  fno:expects ( grel:anyObject grel:suffix ) ;
+  fno:returns ( grel:stringOutput ) .
+
+grel:concat a fno:Function ;
+  fno:name "concat" ;
+  rdfs:label "concat" ;
+  dcterms:description "concat" ;
+  fno:expects ( grel:param_a2 grel:delimiter ) ;
+  fno:returns ( grel:output_array2 ) .
+
+grel:split a fno:Function ;
+  fno:name "split" ;
+  rdfs:label "split" ;
+  dcterms:description "split" ;
+  fno:expects ( grel:param_a2 grel:delimiter ) ;
+  fno:returns ( grel:output_array2 ) .
+
+grel:createArray a fno:Function ;
+  fno:name "createArray" ;
+  rdfs:label "createArray" ;
+  dcterms:description "createArray" ;
+  fno:expects ( grel:anyObject ) ;
+  fno:returns ( grel:output_array2 ) .
+
+grel:addToArray a fno:Function ;
+  fno:name "addToArray" ;
+  rdfs:label "addToArray" ;
+  dcterms:description "addToArray" ;
+  fno:expects ( grel:param_a2 grel:anyObject ) ;
+  fno:returns ( grel:output_array2 ) .
+
+
+grelm:javaString
+    a                  fnoi:JavaClass ;
+    doap:download-page "CustomFunctions.jar" ;
+    fnoi:class-name    "CustomFunctions" .
+
+grelm:addToArray
+    a                    fno:Mapping ;
+    fno:function         grel:addToArray ;
+    fno:implementation   grelm:javaString ;
+    fno:methodMapping    [ a                fnom:Function ;
+                           fnom:method-name "addToArray" ] .
+
+grelm:createArray
+    a                    fno:Mapping ;
+    fno:function         grel:createArray ;
+    fno:implementation   grelm:javaString ;
+    fno:methodMapping    [ a                fnom:Function ;
+                           fnom:method-name "createArray" ] .
+
+grelm:addSuffix
+    a                    fno:Mapping ;
+    fno:function         grel:addSuffix ;
+    fno:implementation   grelm:javaString ;
+    fno:methodMapping    [ a                fnom:Function ;
+                           fnom:method-name "addSuffix" ] .
+
+grelm:addPrefix
+    a                    fno:Mapping ;
+    fno:function         grel:addPrefix ;
+    fno:implementation   grelm:javaString ;
+    fno:methodMapping    [ a                fnom:Function ;
+                           fnom:method-name "addPrefix" ] .
+
+grelm:concat
+    a                    fno:Mapping ;
+    fno:function         grel:concat ;
+    fno:implementation   grelm:javaString ;
+    fno:methodMapping    [ a                fnom:Function ;
+                           fnom:method-name "concat" ] .
+
+grelm:split
+    a                    fno:Mapping ;
+    fno:function         grel:split ;
+    fno:implementation   grelm:javaString ;
+    fno:methodMapping    [ a                fnom:Function ;
+                           fnom:method-name "split" ] .
+
+
+grelm:passthrough
+    a                    fno:Mapping ;
+    fno:function         grel:passthrough ;
+    fno:implementation   grelm:javaString ;
+    fno:methodMapping    [ a                fnom:Function ;
+                           fnom:method-name "passthrough" ] .
+
+grelm:arrayGet
+    a                    fno:Mapping ;
+    fno:function         grel:arrayGet ;
+    fno:implementation   grelm:javaString ;
+    fno:methodMapping    [ a                fnom:Function ;
+                           fnom:method-name "arrayGet" ] .
+
+
+
+grel:index
+    a             fno:Parameter ;
+    fno:name      "index" ;
+    rdfs:label    "index" ;
+    fno:predicate grel:indexParameter;
+    fno:type      xsd:int ;
+    fno:required  "true"^^xsd:boolean .
+
+
+grel:suffix
+    a             fno:Parameter ;
+    fno:name      "suffix" ;
+    rdfs:label    "suffix" ;
+    fno:predicate grel:suffixParameter;
+    fno:type      xsd:string ;
+    fno:required  "true"^^xsd:boolean .
+
+
+grel:prefix
+    a             fno:Parameter ;
+    fno:name      "prefix" ;
+    rdfs:label    "prefix" ;
+    fno:predicate grel:prefixParameter;
+    fno:type      xsd:string ;
+    fno:required  "true"^^xsd:boolean .
+
+grel:delimiter
+    a             fno:Parameter ;
+    fno:name      "delimiter" ;
+    rdfs:label    "delimiter" ;
+    fno:predicate grel:delimiterParameter;
+    fno:type      xsd:string ;
+    fno:required  "true"^^xsd:boolean .
+
+grel:modeParam
+    a             fno:Parameter ;
+    fno:name      "modeParam" ;
+    rdfs:label    "modeParam" ;
+    fno:predicate grel:modeParameter;
+    fno:type      xsd:string ;
+    fno:required  "true"^^xsd:boolean .
+
+grel:templateParam
+    a             fno:Parameter ;
+    fno:name      "templateParam" ;
+    rdfs:label    "templateParam" ;
+    fno:predicate grel:templateParameter ;
+    fno:type      xsd:string ;
+    fno:required  "false"^^xsd:boolean .
+
+grel:valueParam2
+    a             fno:Parameter ;
+    fno:name      "valueParam2" ;
+    rdfs:label    "valueParam2" ;
+    fno:predicate grel:valueParameter2;
+    fno:type      xsd:string ;
+    fno:required  "true"^^xsd:boolean .
+
+grel:param_any_e
+    a             fno:Parameter ;
+    fno:name      "e" ;
+    rdfs:label    "e" ;
+    fno:predicate grel:p_any_e ;
+    fno:type      xsd:any ;
+    fno:required  "true"^^xsd:boolean .
+
+grel:anyObject
+    a             fno:Parameter ;
+    fno:name      "object" ;
+    rdfs:label    "object" ;
+    fno:predicate grel:anyObjectParam ;
+    fno:type      xsd:any .
+
+grel:objectOutput
+    a             fno:Output ;
+    fno:name      "object" ;
+    rdfs:label    "object" ;
+    fno:predicate grel:objectOutput2 ;
+    fno:type      xsd:any .
+
+
+grel:stringOutput
+    a             fno:Output ;
+    fno:name      "object" ;
+    rdfs:label    "object" ;
+    fno:predicate grel:stringOutput2 ;
+    fno:type      xsd:string .
+
+grel:output_array2
+    a             fno:Output ;
+    fno:name      "array" ;
+    rdfs:label    "array" ;
+    fno:predicate grel:o_array2 ;
+    fno:type      rdf:List .
+
+grel:param_a2
+    a             fno:Parameter ;
+    fno:name      "a" ;
+    rdfs:label    "a" ;
+    fno:predicate grel:p_param_a2 ;
+    fno:type      rdf:List ;
+    fno:required  "true"^^xsd:boolean .     
+
+grel:param_a_data
+    a             fno:Parameter ;
+    fno:name      "template data" ;
+    rdfs:label    "template data" ;
+    fno:predicate grel:p_param_a_data ;
+    fno:type      rdf:List ;
+    fno:required  "false"^^xsd:boolean .       
+
+grel:param_a_data_level2
+    a             fno:Parameter ;
+    fno:name      "template data level2" ;
+    rdfs:label    "template data level2" ;
+    fno:predicate grel:p_param_a_data_level2 ;
+    fno:type      rdf:List ;
+    fno:required  "false"^^xsd:boolean .                         
