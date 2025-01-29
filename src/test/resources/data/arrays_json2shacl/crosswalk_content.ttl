@@ -20,6 +20,9 @@
                           [ a       <http://uri.suomi.fi/datamodel/ns/mscr#Source> ;
                             <http://uri.suomi.fi/datamodel/ns/mscr#id>
                                     "mscr:schema:fd0b6d7a-86b3-45f6-aa90-050164cfbed0#root-Root" ;
+                            <http://uri.suomi.fi/datamodel/ns/mscr#uri>
+                                    "mscr:schema:fd0b6d7a-86b3-45f6-aa90-050164cfbed0#root-Root" ;
+
                             <http://uri.suomi.fi/datamodel/ns/mscr#label>
                                     "Arrays"
                           ]
@@ -99,7 +102,7 @@
                                     ] ;
                             <http://www.w3.org/1999/02/22-rdf-syntax-ns#_2>
                                     [ <http://uri.suomi.fi/datamodel/ns/mscr#key>
-                                              "value" ;
+                                              "http://uri.suomi.fi/datamodel/ns/mscr#constantStringParameter" ;
                                       <http://uri.suomi.fi/datamodel/ns/mscr#value>
                                               "http://example.com/veggie"
                                     ]
@@ -110,6 +113,8 @@
                   <http://www.w3.org/1999/02/22-rdf-syntax-ns#_1>
                           [ a       <http://uri.suomi.fi/datamodel/ns/mscr#Source> ;
                             <http://uri.suomi.fi/datamodel/ns/mscr#id>
+                                    "mscr:schema:fd0b6d7a-86b3-45f6-aa90-050164cfbed0#root-Root" ;
+                            <http://uri.suomi.fi/datamodel/ns/mscr#uri>
                                     "mscr:schema:fd0b6d7a-86b3-45f6-aa90-050164cfbed0#root-Root" ;
                             <http://uri.suomi.fi/datamodel/ns/mscr#label>
                                     "Arrays"
@@ -190,7 +195,7 @@
                                     ] ;
                             <http://www.w3.org/1999/02/22-rdf-syntax-ns#_2>
                                     [ <http://uri.suomi.fi/datamodel/ns/mscr#key>
-                                              "prefix" ;
+                                              "http://uri.suomi.fi/datamodel/ns/mscr#prefixParameter" ;
                                       <http://uri.suomi.fi/datamodel/ns/mscr#value>
                                               "https://example.com/"
                                     ]
@@ -320,7 +325,7 @@
                                     ] ;
                             <http://www.w3.org/1999/02/22-rdf-syntax-ns#_2>
                                     [ <http://uri.suomi.fi/datamodel/ns/mscr#key>
-                                              "prefix" ;
+                                              "http://uri.suomi.fi/datamodel/ns/mscr#prefixParameter" ;
                                       <http://uri.suomi.fi/datamodel/ns/mscr#value>
                                               "https://example.com/"
                                     ]
