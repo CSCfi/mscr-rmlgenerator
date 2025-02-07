@@ -26,82 +26,42 @@ public class RMLGenerator {
 	String nsGREL = "http://users.ugent.be/~bjdmeest/function/grel.ttl#";
 
 	public String testMe() {
+		return "test";
+	}
 
-		Model model = ModelFactory.createDefaultModel();
+	private String getSourceIteratorForTargetShape(Model model, String targetShapeUri) throws Exception {
 
-		String[] inputFileNames = {"src/test/resources/data/person_json2shacl/crosswalk_content.ttl",
-				"src/test/resources/data/person_json2shacl/crosswalk_metadata.ttl",
-				"src/test/resources/data/person_json2shacl/source_metadata.ttl",
-				"src/test/resources/data/person_json2shacl/source_content.ttl",
-				"src/test/resources/data/person_json2shacl/target_metadata.ttl",
-				"src/test/resources/data/person_json2shacl/target_content.ttl"
-		};
+		String q = String.format("""
+				PREFIX rdf: <http://www.w3.org/1999/02/22-rdf-syntax-ns#>				
+				PREFIX : <http://uri.suomi.fi/datamodel/ns/mscr#>				
+				select ?iterator
+				where {
+				  ?mappingURI a <http://uri.suomi.fi/datamodel/ns/mscr#Mapping> .
+				  ?mappingURI :target/rdf:_1 ?target .
+				  ?target :uri <%s> .
+				
+				  ?mappingURI :source/rdf:_1 ?source .
+				  ?source :uri ?sourceShapeId .
+				
+				  ?sourceShapeId <http://uri.suomi.fi/datamodel/ns/mscr#instancePath> ?iterator .
+				
+				}						
+				""", targetShapeUri);
 
-		for (String inputFileName : inputFileNames) {
-
-			//Model m = RDFDataMgr.loadModel("rmlgenerator/crosswalk1-input.ttl") ;
-			model.add(RDFDataMgr.loadModel(inputFileName));
-
-			// write out the Model
-
-		}
-
-		/*ResIterator subjects = model.listSubjectsWithProperty(RDF.type, model.getResource("http://uri.suomi.fi/datamodel/ns/mscr#Mapping"));
-
-		System.out.println(model.size());
-
-		while (subjects.hasNext()) {
-			Resource res = subjects.next();
-			System.out.println(res.getURI());
-		}
-
-		System.out.println("done");*/
-
-		String q ="""
-PREFIX rdf: <http://www.w3.org/1999/02/22-rdf-syntax-ns#>				
-PREFIX : <http://uri.suomi.fi/datamodel/ns/mscr#>				
-select ?iterator
-where {
-  ?mappingURI a <http://uri.suomi.fi/datamodel/ns/mscr#Mapping> .
-  ?mappingURI :target/rdf:_1 ?target .
-  ?target :uri ?<iterator:https://shacl-play.sparna.fr/shapes/Person> .
-  
-  ?mappingURI :source/rdf:_1 ?source .
-  ?source :uri ?sourceShapeId .
-  
-  ?sourceShapeId <http://uri.suomi.fi/datamodel/ns/mscr#instancePath> ?iterator .
-  
-}						
-				""";
 		QueryExecution qe = QueryExecutionFactory.create(q, model);
 		ResultSet results = qe.execSelect();
 
 
-		while (results.hasNext()) {
+		if (results.hasNext()) {
 			QuerySolution res = results.next();
-			System.out.println(res.toString());
+			return res.getLiteral("iterator").toString();
+		} else {
+			throw new Exception("Source iterator could not be found for " + targetShapeUri);
 		}
 
-		/*StmtIterator iter = model.listStatements(
-				new SimpleSelector(null, RDF.type, (RDFNode) null) {
-					public boolean selects(Statement s)
-					{
-						System.out.println(s.getObject());
-						return s.getObject().toString() == "http://uri.suomi.fi/datamodel/ns/mscr#Mapping";}
-				});
-
-		System.out.println(iter.hasNext());*/
-
-		//Resource test = model.getResource("https://example.com/1");
-		//Literal prop = test.getProperty(ResourceFactory.createProperty("http://schema.org/name")).getLiteral();
-
-		//System.out.println(prop);
-
-		return "test";
 	}
 
-	public Resource addLogicalSourceModel(String logicalSourceURI, Model inputModel, Model m, String sourceSchemaURI,
-										   String sourcePropertyURI) {
+	public Resource addLogicalSource(String logicalSourceURI, Model m) throws Exception {
 
 		/*
 		You can now get the iterator source for a specific shape by querying along the lines:
@@ -113,7 +73,17 @@ where {
 
 		 */
 
+		String iterator = "";
 		Resource logicalSource = m.createResource(logicalSourceURI);
+		try {
+			iterator = getSourceIteratorForTargetShape(m, "iterator:https://shacl-play.sparna.fr/shapes/Person");
+		} catch(Exception e) {
+			System.out.println(e.toString());
+			throw e;
+		}
+
+		logicalSource.addProperty(m.createProperty(nsRML + "iterator"), iterator);
+
 		/*logicalSource.addProperty(RDF.type, m.createResource(nsRML + "BaseSource"));
 		Resource referenceFormulation = m.createResource(nsQL + "JSONPath");
 		logicalSource.addProperty(m.createProperty(nsRML + "referenceFormulation"), referenceFormulation);
