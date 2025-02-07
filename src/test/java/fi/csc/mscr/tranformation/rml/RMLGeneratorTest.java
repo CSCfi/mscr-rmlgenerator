@@ -10,6 +10,7 @@ import org.junit.jupiter.api.Test;
 
 class RMLGeneratorTest {
 
+	
 	Model loadPersonTestData() {
 		Model model = ModelFactory.createDefaultModel();
 
