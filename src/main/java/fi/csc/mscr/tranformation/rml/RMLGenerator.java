@@ -13,6 +13,7 @@ import org.apache.jena.vocabulary.RDFS;
 import org.topbraid.shacl.vocabulary.SH;
 
 import java.io.InputStream;
+import java.util.Optional;
 
 //import fi.vm.yti.datamodel.api.v2.dto.MSCR;
 
@@ -29,7 +30,7 @@ public class RMLGenerator {
 		return "test";
 	}
 
-	private String getSourceIteratorForTargetShape(Model model, String targetShapeUri) throws Exception {
+	private Optional<String> getSourceIteratorForTargetShape(Model model, String targetShapeUri) {
 
 		String q = String.format("""
 				PREFIX rdf: <http://www.w3.org/1999/02/22-rdf-syntax-ns#>				
@@ -54,14 +55,14 @@ public class RMLGenerator {
 
 		if (results.hasNext()) {
 			QuerySolution res = results.next();
-			return res.getLiteral("iterator").toString();
+			return Optional.of(res.getLiteral("iterator").toString());
 		} else {
-			throw new Exception("Source iterator could not be found for " + targetShapeUri);
+			return Optional.empty();
 		}
 
 	}
 
-	public Resource addLogicalSource(String logicalSourceURI, Model m) throws Exception {
+	public Resource addLogicalSource(String logicalSourceURI, Model m, String targetShapeUri) throws Exception {
 
 		/*
 		You can now get the iterator source for a specific shape by querying along the lines:
@@ -75,23 +76,20 @@ public class RMLGenerator {
 
 		String iterator = "";
 		Resource logicalSource = m.createResource(logicalSourceURI);
-		try {
-			iterator = getSourceIteratorForTargetShape(m, "iterator:https://shacl-play.sparna.fr/shapes/Person");
-		} catch(Exception e) {
-			System.out.println(e.toString());
-			throw e;
-		}
 
-		logicalSource.addProperty(m.createProperty(nsRML + "iterator"), iterator);
-
-		/*logicalSource.addProperty(RDF.type, m.createResource(nsRML + "BaseSource"));
+		logicalSource.addProperty(RDF.type, m.createResource(nsRML + "BaseSource"));
 		Resource referenceFormulation = m.createResource(nsQL + "JSONPath");
 		logicalSource.addProperty(m.createProperty(nsRML + "referenceFormulation"), referenceFormulation);
 		logicalSource.addProperty(m.createProperty(nsRML + "source"), m.createLiteral("data/person.json"));
 
-		Resource sourceProperty = inputModel.getResource(sourcePropertyURI);
-		Literal iteratorPath = sourceProperty.getProperty(MSCR.instancePath).getLiteral();
-		logicalSource.addProperty(m.createProperty(nsRML + "iterator"), iteratorPath);*/
+		try {
+			iterator = this.getSourceIteratorForTargetShape(m, targetShapeUri).orElseThrow(Exception::new);
+		} catch(Exception e) {
+			System.out.println("Iterator could not be found");
+			throw e;
+		}
+
+		logicalSource.addProperty(m.createProperty(nsRML + "iterator"), iterator);
 
 		return logicalSource;
 	}
