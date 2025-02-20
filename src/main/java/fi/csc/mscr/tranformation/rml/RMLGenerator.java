@@ -43,18 +43,15 @@ public class RMLGenerator {
 				PREFIX : <http://uri.suomi.fi/datamodel/ns/mscr#>	
 				
 				select ?format where {
-				    <%s> a <http://uri.suomi.fi/datamodel/ns/mscr#Crosswalk> ;
-				     <http://uri.suomi.fi/datamodel/ns/mscr#sourceSchema> ?sourceIri .
+				    <%s> a :Crosswalk ;
+				     :sourceSchema ?sourceIri .
 				   
-				    ?sourceIri <http://uri.suomi.fi/datamodel/ns/mscr#format> ?format
-				   
-				   
+				    ?sourceIri :format ?format	   
 				}		
 				""", crosswalkIri);
 
 		QueryExecution qe = QueryExecutionFactory.create(q, model);
 		ResultSet results = qe.execSelect();
-
 
 		if (results.hasNext()) {
 			QuerySolution res = results.next();
@@ -67,9 +64,6 @@ public class RMLGenerator {
 
 				default: throw new Error("No matching reference formulation found for " + ref);
 			}
-
-
-
 		} else {
 			return Optional.empty();
 		}
@@ -83,15 +77,14 @@ public class RMLGenerator {
 				PREFIX : <http://uri.suomi.fi/datamodel/ns/mscr#>				
 				select ?iterator
 				where {
-				  ?mappingURI a <http://uri.suomi.fi/datamodel/ns/mscr#Mapping> .
+				  ?mappingURI a :Mapping .
 				  ?mappingURI :target/rdf:_1 ?target .
 				  ?target :uri <%s> .
 				
 				  ?mappingURI :source/rdf:_1 ?source .
 				  ?source :uri ?sourceShapeId .
 				
-				  ?sourceShapeId <http://uri.suomi.fi/datamodel/ns/mscr#instancePath> ?iterator .
-				
+				  ?sourceShapeId :instancePath ?iterator .
 				}						
 				""", targetShapeUri);
 
@@ -124,7 +117,6 @@ public class RMLGenerator {
 		ReferenceFormulation refFormulation = null;
 		Resource logicalSource = m.createResource(logicalSourceURI);
 
-
 		try {
 			var ref = this.getSourceSchema(m, crosswalkIri);
 			refFormulation = ref.orElseThrow(Exception::new);
@@ -132,12 +124,11 @@ public class RMLGenerator {
 			System.out.println("Format could not be found");
 			throw e;
 		}
-
-
+		
 		logicalSource.addProperty(RDF.type, m.createResource(nsRML + "BaseSource"));
 		Resource referenceFormulation = m.createResource(nsQL + refFormulation);
 		logicalSource.addProperty(m.createProperty(nsRML + "referenceFormulation"), referenceFormulation);
-		logicalSource.addProperty(m.createProperty(nsRML + "source"), m.createLiteral("data/person.json"));
+		//logicalSource.addProperty(m.createProperty(nsRML + "source"), m.createLiteral("data/person.json"));
 
 		try {
 			iterator = this.getSourceIteratorForTargetShape(m, targetShapeUri).orElseThrow(Exception::new);
