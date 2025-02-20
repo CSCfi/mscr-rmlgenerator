@@ -26,8 +26,54 @@ public class RMLGenerator {
 	String nsFNML = "http://semweb.mmlab.be/ns/fnml#";
 	String nsGREL = "http://users.ugent.be/~bjdmeest/function/grel.ttl#";
 
+	enum ReferenceFormulation {
+		JSONPath,
+		XPath,
+		CSV
+	}
+
 	public String testMe() {
 		return "test";
+	}
+
+	private Optional<ReferenceFormulation> getSourceSchema(Model model, String crosswalkIri) {
+
+		String q = String.format("""
+				PREFIX rdf: <http://www.w3.org/1999/02/22-rdf-syntax-ns#>				
+				PREFIX : <http://uri.suomi.fi/datamodel/ns/mscr#>	
+				
+				select ?format where {
+				    <%s> a <http://uri.suomi.fi/datamodel/ns/mscr#Crosswalk> ;
+				     <http://uri.suomi.fi/datamodel/ns/mscr#sourceSchema> ?sourceIri .
+				   
+				    ?sourceIri <http://uri.suomi.fi/datamodel/ns/mscr#format> ?format
+				   
+				   
+				}		
+				""", crosswalkIri);
+
+		QueryExecution qe = QueryExecutionFactory.create(q, model);
+		ResultSet results = qe.execSelect();
+
+
+		if (results.hasNext()) {
+			QuerySolution res = results.next();
+			var ref = res.getLiteral("format");
+
+			switch (ref.toString()) {
+				case "JSONSCHEMA": return Optional.of(ReferenceFormulation.JSONPath);
+				case "XSD": return Optional.of(ReferenceFormulation.XPath);
+				case "CSV": return Optional.of(ReferenceFormulation.CSV);
+
+				default: throw new Error("No matching reference formulation found for " + ref);
+			}
+
+
+
+		} else {
+			return Optional.empty();
+		}
+
 	}
 
 	private Optional<String> getSourceIteratorForTargetShape(Model model, String targetShapeUri) {
@@ -62,7 +108,7 @@ public class RMLGenerator {
 
 	}
 
-	public Resource addLogicalSource(String logicalSourceURI, Model m, String targetShapeUri) throws Exception {
+	public Resource addLogicalSource(String logicalSourceURI, Model m, String targetShapeUri, String crosswalkIri) throws Exception {
 
 		/*
 		You can now get the iterator source for a specific shape by querying along the lines:
@@ -75,10 +121,21 @@ public class RMLGenerator {
 		 */
 
 		String iterator = "";
+		ReferenceFormulation refFormulation = null;
 		Resource logicalSource = m.createResource(logicalSourceURI);
 
+
+		try {
+			var ref = this.getSourceSchema(m, crosswalkIri);
+			refFormulation = ref.orElseThrow(Exception::new);
+		} catch(Exception e) {
+			System.out.println("Format could not be found");
+			throw e;
+		}
+
+
 		logicalSource.addProperty(RDF.type, m.createResource(nsRML + "BaseSource"));
-		Resource referenceFormulation = m.createResource(nsQL + "JSONPath");
+		Resource referenceFormulation = m.createResource(nsQL + refFormulation);
 		logicalSource.addProperty(m.createProperty(nsRML + "referenceFormulation"), referenceFormulation);
 		logicalSource.addProperty(m.createProperty(nsRML + "source"), m.createLiteral("data/person.json"));
 
