@@ -36,6 +36,38 @@ public class RMLGenerator {
 		return "test";
 	}
 
+	private Optional<String> getSubjectMapTemplate(Model model, String mappingIri) {
+		String q = String.format("""
+				PREFIX rdf: <http://www.w3.org/1999/02/22-rdf-syntax-ns#>				
+				PREFIX : <http://uri.suomi.fi/datamodel/ns/mscr#>				
+				
+				select ?template
+				where {
+				    ?mappingURI a :Mapping .
+				    ?mappingURI :target/rdf:_1 ?target .
+				    ?target :uri <subject:https://shacl-play.sparna.fr/shapes/Person> .
+				   
+				    ?mappingURI :processing ?proc .
+				    ?proc ?p ?o .
+				    ?o rdf:_2 ?oo. # TODO: is this general?
+				    ?oo :value ?template
+				
+				}
+				
+				""", mappingIri);
+
+		QueryExecution qe = QueryExecutionFactory.create(q, model);
+		ResultSet results = qe.execSelect();
+
+		if (results.hasNext()) {
+			QuerySolution res = results.next();
+			return Optional.of(res.getLiteral("template").toString());
+		} else {
+			return Optional.empty();
+		}
+
+	}
+
 	private Optional<ReferenceFormulation> getSourceSchema(Model model, String crosswalkIri) {
 
 		String q = String.format("""
@@ -101,7 +133,9 @@ public class RMLGenerator {
 
 	}
 
-	public Resource addLogicalSource(String logicalSourceURI, Model m, String targetShapeUri, String crosswalkIri) throws Exception {
+	public Resource addLogicalSource(String logicalSourceURI, Model inputModel, String targetShapeUri, String crosswalkIri) throws Exception {
+
+		Model outputModel = ModelFactory.createDefaultModel();
 
 		/*
 		You can now get the iterator source for a specific shape by querying along the lines:
@@ -115,30 +149,47 @@ public class RMLGenerator {
 
 		String iterator = "";
 		ReferenceFormulation refFormulation = null;
-		Resource logicalSource = m.createResource(logicalSourceURI);
+		Resource logicalSource = outputModel.createResource(logicalSourceURI);
 
 		try {
-			var ref = this.getSourceSchema(m, crosswalkIri);
+			var ref = this.getSourceSchema(inputModel, crosswalkIri);
 			refFormulation = ref.orElseThrow(Exception::new);
 		} catch(Exception e) {
 			System.out.println("Format could not be found");
 			throw e;
 		}
 		
-		logicalSource.addProperty(RDF.type, m.createResource(nsRML + "BaseSource"));
-		Resource referenceFormulation = m.createResource(nsQL + refFormulation);
-		logicalSource.addProperty(m.createProperty(nsRML + "referenceFormulation"), referenceFormulation);
+		logicalSource.addProperty(RDF.type, outputModel.createResource(nsRML + "BaseSource"));
+		Resource referenceFormulation = outputModel.createResource(nsQL + refFormulation);
+		logicalSource.addProperty(outputModel.createProperty(nsRML + "referenceFormulation"), referenceFormulation);
 		//logicalSource.addProperty(m.createProperty(nsRML + "source"), m.createLiteral("data/person.json"));
 
 		try {
-			iterator = this.getSourceIteratorForTargetShape(m, targetShapeUri).orElseThrow(Exception::new);
+			iterator = this.getSourceIteratorForTargetShape(inputModel, targetShapeUri).orElseThrow(Exception::new);
 		} catch(Exception e) {
 			System.out.println("Iterator could not be found");
 			throw e;
 		}
 
-		logicalSource.addProperty(m.createProperty(nsRML + "iterator"), iterator);
+		logicalSource.addProperty(outputModel.createProperty(nsRML + "iterator"), iterator);
 
 		return logicalSource;
+	}
+
+	public Model addSubjectMap(Model inputModel, String mappingIri) throws Exception {
+
+		Model outputModel = ModelFactory.createDefaultModel();
+
+		Resource triplesMap = outputModel.createResource("#Mapping");
+
+		Optional<String> template = getSubjectMapTemplate(inputModel, mappingIri);
+
+		Resource subjMap = outputModel.createResource();
+		subjMap.addProperty(outputModel.createProperty(nsRR + "template"), outputModel.createLiteral(template.orElseThrow(Exception::new)));
+		subjMap.addProperty(outputModel.createProperty(nsRR + "class"), outputModel.createResource("http://schema.org/Person")); // TODO: get this from target
+
+		triplesMap.addProperty(outputModel.createProperty(nsRR + "subjectMap"), subjMap);
+
+		return outputModel;
 	}
 }

@@ -41,15 +41,26 @@ class RMLGeneratorTest {
         RMLGenerator r = new RMLGenerator();
         Resource logicalSource = r.addLogicalSource("http://example.com/1", model, "iterator:https://shacl-play.sparna.fr/shapes/Person", "mscr:crosswalk:653b47f8-0bad-4c0e-86e9-f4ff13b5d8e3");
 
-        StmtIterator props = logicalSource.listProperties();
+        /*StmtIterator props = logicalSource.listProperties();
         props.forEach(
                 System.out::println
-        );
+        );*/
 
         assertEquals("http://example.com/1", logicalSource.getURI());
         assertEquals("http://semweb.mmlab.be/ns/rml#BaseSource", logicalSource.getProperty(model.createProperty("http://www.w3.org/1999/02/22-rdf-syntax-ns#type")).getObject().toString());
 		assertEquals("$", logicalSource.getProperty(model.createProperty("http://semweb.mmlab.be/ns/rml#iterator")).getObject().asLiteral().toString());
         assertEquals("http://semweb.mmlab.be/ns/ql#JSONPath", logicalSource.getProperty(model.createProperty("http://semweb.mmlab.be/ns/rml#referenceFormulation")).getObject().toString());
+    }
+
+    @Test
+    void testAddSubjectMap() throws Exception {
+        Model model = loadPersonTestData(Arrays.asList(this.personJsonTestData));
+        RMLGenerator r = new RMLGenerator();
+
+        Model subjMap = r.addSubjectMap(model, "subject:https://shacl-play.sparna.fr/shapes/Person");
+
+        subjMap.write(System.out, "TTL");
+
     }
 
 }
