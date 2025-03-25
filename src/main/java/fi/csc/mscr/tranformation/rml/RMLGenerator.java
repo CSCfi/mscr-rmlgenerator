@@ -133,6 +133,57 @@ public class RMLGenerator {
 
 	}
 
+	private Model getPredicatesForShape(Model model, String targetShapeUri) {
+
+		String q = String.format("""
+				PREFIX sh: <http://www.w3.org/ns/shacl#>
+				PREFIX rdf: <http://www.w3.org/1999/02/22-rdf-syntax-ns#>				
+				PREFIX : <http://uri.suomi.fi/datamodel/ns/mscr#>				
+				
+				select ?sourceShapeUri ?schemaPath ?predicate
+				where {
+				    BIND(IRI("%s") as ?nodeShape)
+				   
+				    ?mappingURI a :Mapping .
+				    ?mappingURI :target ?targetSeq .
+				    ?targetSeq ?p ?target .
+				    ?target :uri ?propShape .
+				
+				    ?nodeShape sh:property ?propShape  .
+				    ?propShape sh:path ?predicate .
+				
+				    ?mappingURI :source ?seqBlankNode .
+				    ?seqBlankNode ?pp ?sourceBlankNode .
+				   
+				    ?sourceBlankNode :uri ?sourceShapeUri .
+				   
+					?sourceShapeUri :schemaPath ?schemaPath
+				}
+				""", targetShapeUri);
+
+		QueryExecution qe = QueryExecutionFactory.create(q, model);
+		ResultSet results = qe.execSelect();
+
+		Model outputModel = ModelFactory.createDefaultModel();
+
+		while (results.hasNext()) {
+			QuerySolution res = results.next();
+
+			Resource predObjMap = outputModel.createResource();
+			Resource objectMap = outputModel.createResource();
+
+			Resource predicate = res.get("predicate").asResource();
+			Literal reference = res.get("schemaPath").asLiteral();
+			predObjMap.addProperty(outputModel.createProperty(nsRR + "predicate"), predicate);
+			predObjMap.addProperty(outputModel.createProperty(nsRR + "objectMap"), objectMap);
+			objectMap.addProperty(outputModel.createProperty(nsRML + "reference"), reference);
+
+		}
+
+		return outputModel;
+
+	}
+
 	public Resource addLogicalSource(String logicalSourceURI, Model inputModel, String targetShapeUri, String crosswalkIri) throws Exception {
 
 		Model outputModel = ModelFactory.createDefaultModel();
@@ -180,7 +231,7 @@ public class RMLGenerator {
 
 		Model outputModel = ModelFactory.createDefaultModel();
 
-		Resource triplesMap = outputModel.createResource("#Mapping");
+		Resource triplesMap = outputModel.createResource("#Mapping"); // TODO: make this unique
 
 		Optional<String> template = getSubjectMapTemplate(inputModel, mappingIri);
 
@@ -191,5 +242,11 @@ public class RMLGenerator {
 		triplesMap.addProperty(outputModel.createProperty(nsRR + "subjectMap"), subjMap);
 
 		return outputModel;
+	}
+
+	public Model addPredicateObjectMap(Model inputModel, String targetShapeUri) {
+
+		return getPredicatesForShape(inputModel, targetShapeUri);
+
 	}
 }

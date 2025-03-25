@@ -63,4 +63,16 @@ class RMLGeneratorTest {
 
     }
 
+    @Test
+    void testAddPredicateObjectMap() throws Exception {
+
+        Model model = loadPersonTestData(Arrays.asList(this.personJsonTestData));
+        RMLGenerator r = new RMLGenerator();
+
+        Model predObjMaps = r.addPredicateObjectMap(model,"https://shacl-play.sparna.fr/shapes/Person");
+
+        predObjMaps.write(System.out, "TTL");
+
+    }
+
 }
