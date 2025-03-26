@@ -53,7 +53,7 @@
                 <http://www.w3.org/2004/02/skos/core#exactMatch> ;
         <http://uri.suomi.fi/datamodel/ns/mscr#processing>
                 [ <http://uri.suomi.fi/datamodel/ns/mscr#id>
-                          "http://uri.suomi.fi/datamodel/ns/mscr#replace2Func" ;
+                          "http://uri.suomi.fi/datamodel/ns/mscr#template" ; # TODO: adapt in MSCR
                   <http://uri.suomi.fi/datamodel/ns/mscr#processingParams>
                           [ a       <http://www.w3.org/1999/02/22-rdf-syntax-ns#Bag> ;
                             <http://www.w3.org/1999/02/22-rdf-syntax-ns#_1>
@@ -64,9 +64,9 @@
                                     ] ;
                             <http://www.w3.org/1999/02/22-rdf-syntax-ns#_2>
                                     [ <http://uri.suomi.fi/datamodel/ns/mscr#key>
-                                              "pattern" ;
+                                              <http://uri.suomi.fi/datamodel/ns/mscr#fno/param/value> ; # TODO: adapt in MSCR
                                       <http://uri.suomi.fi/datamodel/ns/mscr#value>
-                                              "https://example.com/{value_0}{value_1}"
+                                              "https://example.com/{firstName}{lastName}" # TODO: adapt in MSCR
                                     ]
                           ]
                 ] ;
