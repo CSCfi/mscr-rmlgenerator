@@ -4,6 +4,7 @@
 
 <mscr:crosswalk:653b47f8-0bad-4c0e-86e9-f4ff13b5d8e3@mapping=9168df0b-0c74-4773-97b0-3694228cfad2>
         a       <http://uri.suomi.fi/datamodel/ns/mscr#Mapping> ;
+        a       <http://uri.suomi.fi/datamodel/ns/mscr#IteratorMapping> ;
         <http://purl.org/dc/terms/identifier>
                 "mscr:crosswalk:653b47f8-0bad-4c0e-86e9-f4ff13b5d8e3@mapping=9168df0b-0c74-4773-97b0-3694228cfad2" ;
         <http://purl.org/dc/terms/isPartOf>

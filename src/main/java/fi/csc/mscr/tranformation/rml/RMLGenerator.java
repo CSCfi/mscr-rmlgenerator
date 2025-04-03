@@ -14,6 +14,7 @@ import org.topbraid.shacl.vocabulary.SH;
 
 import java.io.InputStream;
 import java.util.Optional;
+import java.util.UUID;
 
 //import fi.vm.yti.datamodel.api.v2.dto.MSCR;
 
@@ -123,7 +124,6 @@ public class RMLGenerator {
 		QueryExecution qe = QueryExecutionFactory.create(q, model);
 		ResultSet results = qe.execSelect();
 
-
 		if (results.hasNext()) {
 			QuerySolution res = results.next();
 			return Optional.of(res.getLiteral("iterator").toString());
@@ -133,7 +133,7 @@ public class RMLGenerator {
 
 	}
 
-	private Model getPredicatesForShape(Model model, String targetShapeUri) {
+	private Model getPredicatesForShape(Resource triplesMap, Model model, String targetShapeUri) {
 
 		String q = String.format("""
 				PREFIX sh: <http://www.w3.org/ns/shacl#>
@@ -178,13 +178,14 @@ public class RMLGenerator {
 			predObjMap.addProperty(outputModel.createProperty(nsRR + "objectMap"), objectMap);
 			objectMap.addProperty(outputModel.createProperty(nsRML + "reference"), reference);
 
+			outputModel.add(triplesMap, outputModel.createProperty(nsRR + "predicateObjectMap"), predObjMap);
 		}
 
 		return outputModel;
 
 	}
 
-	public Resource addLogicalSource(String logicalSourceURI, Model inputModel, String targetShapeUri, String crosswalkIri) throws Exception {
+	public Model addLogicalSource(Resource triplesMap, String logicalSourceURI, Model inputModel, String targetShapeUri, String crosswalkIri) throws Exception {
 
 		Model outputModel = ModelFactory.createDefaultModel();
 
@@ -224,14 +225,14 @@ public class RMLGenerator {
 
 		logicalSource.addProperty(outputModel.createProperty(nsRML + "iterator"), iterator);
 
-		return logicalSource;
+		outputModel.add(triplesMap, outputModel.createProperty(nsRML + "logicalSource"), logicalSource);
+		return outputModel;
 	}
 
-	public Model addSubjectMap(Model inputModel, String mappingIri) throws Exception {
+	public Model addSubjectMap(Resource triplesMap, Model inputModel, String mappingIri) throws Exception {
 
 		Model outputModel = ModelFactory.createDefaultModel();
 
-		Resource triplesMap = outputModel.createResource("#Mapping"); // TODO: make this unique
 
 		Optional<String> template = getSubjectMapTemplate(inputModel, mappingIri);
 
@@ -244,9 +245,45 @@ public class RMLGenerator {
 		return outputModel;
 	}
 
-	public Model addPredicateObjectMap(Model inputModel, String targetShapeUri) {
+	public Model addPredicateObjectMap(Resource triplesMap, Model inputModel, String targetShapeUri) {
 
-		return getPredicatesForShape(inputModel, targetShapeUri);
+		return getPredicatesForShape(triplesMap, inputModel, targetShapeUri);
 
+	}
+
+	public Model generateMapping(String crosswalkUri, Model model) throws Exception {
+		
+		Model mapping = ModelFactory.createDefaultModel();
+		// get tripleobjectmaps 
+		String iteratorQuery = """
+				PREFIX mscr: <http://uri.suomi.fi/datamodel/ns/mscr#> 
+				PREFIX rdf: <http://www.w3.org/1999/02/22-rdf-syntax-ns#>	
+				select distinct ?target ?mapping
+				where {
+					?mapping a mscr:IteratorMapping .					
+					?mapping mscr:target/rdf:_1/mscr:uri ?target .
+					?mapping mscr:source/rdf:_1/mscr:uri ?source .
+				}
+				
+				""";
+		QueryExecution qe = QueryExecutionFactory.create(iteratorQuery, model);
+		ResultSet it = qe.execSelect();
+		while (it.hasNext()) {
+			QuerySolution soln1 = it.next();
+
+			String target = soln1.getResource("target").getURI();			
+			String targetShapeURI = target.substring(9);
+			String mappingURI = soln1.getResource("mapping").getURI();
+			
+			Resource triplesMap = mapping.createResource("http://rmlgenerator/" + UUID.randomUUID().toString());
+			triplesMap.addProperty(RDF.type, mapping.createResource(nsRR + "TriplesMap"));
+			
+			String logicalSourceURI = triplesMap.getURI() + ":logicalSource";
+			mapping.add(addLogicalSource(triplesMap, logicalSourceURI, model, target, crosswalkUri));			
+			mapping.add(addPredicateObjectMap(triplesMap, model, targetShapeURI));
+			mapping.add(addSubjectMap(triplesMap, model, mappingURI));
+		
+		}
+		return mapping;
 	}
 }
