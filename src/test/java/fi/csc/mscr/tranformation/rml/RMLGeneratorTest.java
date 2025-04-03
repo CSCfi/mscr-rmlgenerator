@@ -4,6 +4,7 @@ import static org.junit.jupiter.api.Assertions.*;
 
 import org.apache.jena.rdf.model.Model;
 import org.apache.jena.rdf.model.ModelFactory;
+import org.apache.jena.rdf.model.RDFNode;
 import org.apache.jena.rdf.model.Resource;
 import org.apache.jena.rdf.model.StmtIterator;
 import org.apache.jena.riot.RDFDataMgr;
@@ -86,7 +87,13 @@ class RMLGeneratorTest {
         
         
         mapping.write(System.out, "TTL");
-        assertTrue(mapping.size() > 0);
+        
+        Resource triplesMap = mapping.listSubjectsWithProperty(RDF.type, mapping.getResource("http://www.w3.org/ns/r2rml#TriplesMap")).next();
+        assertEquals(1, mapping.listObjectsOfProperty(triplesMap, mapping.getProperty("http://www.w3.org/ns/r2rml#subjectMap")).toList().size());
+        assertEquals(1, mapping.listObjectsOfProperty(triplesMap, mapping.getProperty("http://semweb.mmlab.be/ns/rml#logicalSource")).toList().size());
+        assertEquals(4, mapping.listObjectsOfProperty(triplesMap, mapping.getProperty("http://www.w3.org/ns/r2rml#predicateObjectMap")).toList().size());
+        		
+        		
     }
 
 }
